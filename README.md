@@ -110,6 +110,17 @@ Proxmox cloudinit drive...). `tinycloudinit`: attach a Proxmox cloudinit
 drive (or any ISO9660 `cidata` volume with all four files). Log in as
 `fedora` with your provisioned key. Install more packages with `dnf5 install`.
 
+## Sister projects
+
+- **[tinycloudinit](https://github.com/glennswest/tinycloudinit)** — the 682 KB
+  static musl Rust cloud-init replacement that powers the `tinycloudinit`
+  profile: NoCloud cidata seeds (users, ssh keys, sudo, write_files, runcmd,
+  hostname), run-once-per-instance semantics, native partition growth in v1.1.
+- **[tztiny](https://github.com/glennswest/tztiny)** — a 463 KB static Rust
+  binary embedding the entire IANA timezone database. These images ship
+  UTC-only (no tzdata); drop tztiny in and `tztiny set America/Edmonton`
+  writes `/etc/localtime` directly — no zoneinfo tree needed.
+
 ## License & Fedora compliance
 
 The build scripts and configuration in this repository are MIT-licensed (see

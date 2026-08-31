@@ -7,6 +7,7 @@
   framing, new "License & Fedora compliance" section (in-image /usr/share/licenses retained,
   SRPM source pointers, trademark disclaimer).
 - **chore:** MIT LICENSE file added; repository made public.
+- **docs:** Sister-projects section (tinycloudinit, tztiny) with descriptions.
 
 ## [v0.7.1] — 2026-08-31
 
