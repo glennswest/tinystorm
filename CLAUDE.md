@@ -19,7 +19,13 @@ Tiniest practical Fedora bootable cloud image. See README.md for the design.
       rootfs 340 MB (vs 437 MB); smoke test does real ssh login + sudo + growfs verification
 - [x] v0.3.0: afterburn replaced by the glennswest/tinycloudinit static binary (682 KB);
       seed-driven users, no baked account, no sshd drop-in, no platform-id karg
-- Future: locale/doc pruning pass, systemd-timesyncd, aarch64, UKI single-file boot
+- [ ] v0.4.0 (in progress): VM-only kernel module prune — keep lsmod-derived whitelist
+      (virtio*, ahci/ata, nvme, sd/sr, isofs/vfat/nls, fuse/virtiofs, vsock, e1000/e1000e)
+      + modules.dep closure, delete the rest, depmod, then dracut; drop the duplicate
+      vmlinuz from /lib/modules. TRIM_MODULES=0 to skip. Expected ≥100 MiB off the rootfs.
+- Future: locale/doc pruning pass (45 MiB in /usr/share/locale), optional no-dnf5 build
+      (~35 MiB; container-style outside-installroot management), systemd-timesyncd, aarch64,
+      UKI single-file boot
 
 ## tinycloudinit profile decisions
 - v0.3.0: uses glennswest/tinycloudinit release binary (static musl, /usr/local/sbin) + its
@@ -37,6 +43,17 @@ Tiniest practical Fedora bootable cloud image. See README.md for the design.
   `ignition.platform.id=proxmoxve` in the loader entry.
 - Root partition GPT type must be root-x86-64 (4F68BCE3-E8CD-4DB1-96E7-FBCAF984B709) for systemd-repart `Type=root` matching.
 - fsck passno 0 (no e2fsprogs/dosfstools in image); growth = systemd-repart + x-systemd.growfs.
+
+## Size audit (v0.3.0 tinycloudinit image, measured 2026-08-30)
+- 354 MiB installed / 146 packages. Kernel ~174 MiB (kernel-core 100.6 + kernel-modules-core 73;
+  modules tree 115 MiB: drivers 54, net 14). dnf5 stack ~33 MiB and is the sole consumer of
+  glib2 (15), gnutls (3.8), libxml2, sqlite-libs. /usr/share/locale 45 MiB. systemd ~33 MiB.
+- Probe boot lsmod (QEMU q35/KVM): virtio_net+failover, isofs, vfat/fat, fuse+virtiofs,
+  vsock+vmw_vsock_virtio_transport, loop, nfnetlink, qemu_fw_cfg, bochs; junk: parport*/ppdev,
+  joydev, serio_raw, i2c_i801/smbus. virtio_blk/virtio_pci/ext4 are built into the vmlinuz
+  (absent from lsmod, ext4 in /proc/filesystems).
+- dnf5 is already the C++ rewrite (no Python); microdnf is retired. Smaller = rpm-only or no
+  package manager (container-style: manage via dnf5 --installroot from outside, as build.sh does).
 
 ## Notes / decisions
 - UEFI-only via systemd-boot (removable path `EFI/BOOT/BOOTX64.EFI`), no GRUB, no BIOS boot.
