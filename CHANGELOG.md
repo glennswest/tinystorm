@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### 2026-08-31
+- **docs:** tinyforge added to sister projects.
+
 ## [v0.7.2] — 2026-08-31
 
 ### Fixed
