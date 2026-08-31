@@ -255,7 +255,9 @@ find "$MNT/usr/share/terminfo" -type d -empty -delete
 # on the build box — sqlite works on the file directly, no rpm lock needed)
 command -v sqlite3 >/dev/null || dnf5 -y install sqlite
 RPMDB_BEFORE="$(du -sk "$MNT/usr/lib/sysimage/rpm" | cut -f1)"
-sqlite3 "$MNT/usr/lib/sysimage/rpm/rpmdb.sqlite" 'VACUUM;'
+# DELETE journal mode: a WAL-mode db can't even be read from a ro mount
+# (sqlite must create the -shm file), which breaks rpm --root queries
+sqlite3 "$MNT/usr/lib/sysimage/rpm/rpmdb.sqlite" 'PRAGMA journal_mode=DELETE; VACUUM;'
 rm -rf "$MNT"/var/lib/dnf
 echo "== rpmdb: $((RPMDB_BEFORE/1024)) MiB -> $(($(du -sk "$MNT/usr/lib/sysimage/rpm" | cut -f1)/1024)) MiB =="
 

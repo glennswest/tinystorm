@@ -1,8 +1,13 @@
 # Changelog
 
-## [Unreleased]
+## [v0.7.2] — 2026-08-31
 
-### 2026-08-31
+### Fixed
+- **fix:** rpmdb left in WAL journal mode by the VACUUM step made the db unreadable from
+  read-only mounts (sqlite needs to create the -shm file), breaking `rpm --root=<mnt>` queries
+  on shipped images; the build now sets journal_mode=DELETE (self-contained db) first.
+
+### Added
 - **feat:** Every build now emits `<image>-<version>.manifest.txt` — full package inventory
   (name, version-release, arch, license) of the exact image, for license compliance;
   manifests are covered by SHA256SUMS.
