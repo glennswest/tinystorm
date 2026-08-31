@@ -3,7 +3,7 @@
 Tiniest practical Fedora bootable cloud image. See README.md for the design.
 
 ## Version
-- Current: 0.4.0 (locations: `VERSION`, `CHANGELOG.md` heading)
+- Current: 0.5.0 (locations: `VERSION`, `CHANGELOG.md` heading)
 
 ## Build
 - Build box: `root@dev.g8.lo` (Fedora 43). Never build on the Mac.
@@ -23,7 +23,7 @@ Tiniest practical Fedora bootable cloud image. See README.md for the design.
       (virtio*, ahci/ata, nvme, sd/sr, isofs/vfat/nls, fuse/virtiofs, vsock, e1000/e1000e)
       + modules.dep closure, delete the rest, depmod, then dracut; drop the duplicate
       vmlinuz from /lib/modules. TRIM_MODULES=0 to skip. Expected ≥100 MiB off the rootfs.
-- [ ] v0.5.0 (in progress): locale prune (45 MiB of /usr/share/locale, both profiles;
+- [x] v0.5.0: locale prune (45 MiB of /usr/share/locale, both profiles;
       C.UTF-8 from glibc-minimal-langpack stays) + drop dnf5 stack from tinycloudinit
       profile (~35 MiB: dnf5/libdnf5/librepo/libsolv/glib2/gnutls/libxml2; container-style
       — image managed from outside via dnf5 --installroot; rpmdb kept for inventory).

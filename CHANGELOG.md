@@ -1,8 +1,8 @@
 # Changelog
 
-## [Unreleased]
+## [v0.5.0] — 2026-08-31
 
-### 2026-08-30
+### Added
 - **feat:** Locale prune (both profiles): `/usr/share/locale` translations deleted (~45 MiB);
   C.UTF-8 from glibc-minimal-langpack remains.
 - **feat:** tinycloudinit profile drops the dnf5 stack (~35 MiB: dnf5/libdnf5/librepo/libsolv/
