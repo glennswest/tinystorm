@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased]
+
+### 2026-08-30
+- **feat:** VM-only kernel module prune (default on, `TRIM_MODULES=0` to skip): keep a
+  QEMU/KVM/Proxmox guest whitelist (virtio*, ahci/ata, nvme, sd/sr, isofs/vfat/nls,
+  fuse/virtiofs, vsock, e1000/e1000e, bochs/virtio_gpu, nfnetlink) plus its modules.dep
+  closure, delete the rest of the ~115 MiB module tree, depmod, then build the initramfs.
+  Also drops the duplicate vmlinuz from /lib/modules (the ESP copy is the one that boots).
+- **docs:** Size audit of the v0.3.0 image recorded in CLAUDE.md (354 MiB installed:
+  kernel ~174, dnf5 stack ~33, locale 45, systemd ~33).
+
 ## [v0.3.0] — 2026-08-31
 
 ### Changed

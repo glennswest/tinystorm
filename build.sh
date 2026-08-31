@@ -37,6 +37,26 @@ PACKAGES=(
   dbus-broker
 )
 UNITS=(systemd-networkd.service systemd-resolved.service sshd.service)
+
+# VM-guest module whitelist (TRIM_MODULES=0 keeps the full tree). Derived from a
+# probe boot's lsmod under QEMU q35/KVM plus what other hypervisor configs need:
+# Proxmox attaches the cidata seed as an IDE/SATA cdrom (ahci/ata_piix + sr_mod)
+# and defaults VM disks to virtio-scsi. virtio_blk/virtio_pci/ext4 are built into
+# the Fedora vmlinuz. modules.dep closure pulls transitive deps automatically.
+VM_MODULES=(
+  # storage
+  virtio_blk virtio_scsi sd_mod sr_mod cdrom ahci ata_piix ata_generic nvme
+  # net (e1000/e1000e: common non-virtio QEMU NIC models)
+  virtio_net net_failover failover e1000 e1000e
+  # filesystems: seed ISO, ESP vfat (+codepages), virtiofs shares
+  isofs vfat fat nls_cp437 nls_iso8859_1 nls_ascii nls_utf8 fuse virtiofs loop
+  # guest plumbing
+  virtio_console virtio_balloon virtio_rng qemu_fw_cfg
+  vsock vmw_vsock_virtio_transport
+  # console framebuffer under QEMU VGA / virtio-gpu
+  bochs virtio_gpu
+  nfnetlink
+)
 # GPT root-x86-64 type: enables systemd-repart Type=root matching and gpt-auto
 ROOT_TYPE=4F68BCE3-E8CD-4DB1-96E7-FBCAF984B709
 KARGS="root_karg_placeholder rw console=tty0 console=ttyS0,115200n8 selinux=0"
@@ -151,6 +171,30 @@ done
 # kernel-install usually skips in a chroot (no machine-id); place files ourselves.
 rm -rf "$MNT"/boot/loader "$MNT"/boot/[0-9a-f]*[0-9a-f] 2>/dev/null || true
 cp "$MNT/lib/modules/$KVER/vmlinuz" "$MNT/boot/vmlinuz-$KVER"
+# the ESP copy above is the one that boots; the rootfs duplicate is dead weight
+rm -f "$MNT/lib/modules/$KVER/vmlinuz"
+
+# ---- VM module prune (before dracut, so the initramfs uses the pruned tree) --
+if [ "${TRIM_MODULES:-1}" = 1 ]; then
+  MODDIR="$MNT/lib/modules/$KVER"
+  BEFORE_MIB="$(du -sm "$MODDIR" | cut -f1)"
+  declare -A KEEP
+  for name in "${VM_MODULES[@]}"; do
+    # module filenames use - and _ interchangeably
+    pat="${name//_/[_-]}"
+    while IFS= read -r line; do
+      KEEP["${line%%:*}"]=1
+      for dep in ${line#*:}; do KEEP["$dep"]=1; done   # modules.dep deps are transitive
+    done < <(grep -E "(^|/)${pat}\.ko(\.xz|\.zst|\.gz)?:" "$MODDIR/modules.dep" || true)
+  done
+  while IFS= read -r -d '' f; do
+    rel="${f#"$MODDIR"/}"
+    [ -n "${KEEP[$rel]:-}" ] || rm -f "$f"
+  done < <(find "$MODDIR" -name '*.ko*' -type f -print0)
+  find "$MODDIR" -type d -empty -delete
+  chroot "$MNT" depmod -a "$KVER"
+  echo "== module prune: ${BEFORE_MIB} MiB -> $(du -sm "$MODDIR" | cut -f1) MiB, $(find "$MODDIR" -name '*.ko*' | wc -l) modules kept =="
+fi
 
 chroot "$MNT" dracut --force --reproducible --no-hostonly \
   --omit "network network-legacy network-manager nfs iscsi lvm mdraid dm crypt multipath resume plymouth i18n" \

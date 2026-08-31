@@ -46,6 +46,7 @@ Cloud ~400 MB is left out deliberately.
 | Need | Choice | Why it's the smallest |
 |---|---|---|
 | Kernel | `kernel-core` | Full `kernel` drags `linux-firmware` (hundreds of MB). Cloud VMs use virtio — no firmware needed. Weak deps disabled so the split GPU firmware packages stay out too. |
+| Kernel modules | VM-guest whitelist prune (`TRIM_MODULES=0` to skip) | `kernel-core`+`kernel-modules-core` ship a ~115 MiB module tree; a KVM/Proxmox guest loads ~20. The build keeps a whitelist (virtio*, ahci/ata, nvme, sd/sr, isofs/vfat, fuse/virtiofs, vsock, e1000/e1000e, framebuffer) plus its `modules.dep` closure, deletes the rest, and re-runs depmod before dracut. The duplicate `vmlinuz` under `/lib/modules` is dropped too — the ESP copy boots. |
 | Init | `systemd`, `systemd-udev` | Required by everything; no way around it and no reason to want one. |
 | Networking | `systemd-networkd` + `systemd-resolved` | Replaces NetworkManager (+ its Python/glib pile). One `.network` file does DHCP on `en*`/`eth*`. |
 | Bootloader | `systemd-boot-unsigned` | GRUB2 is ~30 MB across packages and needs os-prober/config machinery. systemd-boot is one EFI binary copied to `ESP/EFI/BOOT/BOOTX64.EFI` plus a 5-line loader entry. UEFI-only, which every current cloud supports. |
