@@ -1,0 +1,18 @@
+[Unit]
+Description=Hostname and network config from cloud metadata (afterburn)
+# Platform comes from ignition.platform.id on the kernel cmdline.
+# Best-effort: a missing cidata drive must not fail the boot.
+After=local-fs.target
+Before=network-pre.target systemd-networkd.service sshd.service
+ConditionKernelCommandLine=ignition.platform.id=proxmoxve
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+RuntimeDirectory=tinystorm
+ExecStartPre=/usr/bin/mkdir -p /run/systemd/network
+ExecStart=-/usr/bin/afterburn --cmdline --hostname=/run/tinystorm/hostname --network-units=/run/systemd/network
+ExecStartPost=-/usr/bin/bash -c 'h="$(cat /run/tinystorm/hostname 2>/dev/null)"; if [ -n "$h" ]; then echo "$h" > /etc/hostname; echo "$h" > /proc/sys/kernel/hostname; fi'
+
+[Install]
+WantedBy=multi-user.target
