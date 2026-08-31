@@ -5,6 +5,8 @@
 ### 2026-08-30
 - **perf:** Compact the rpmdb with `rpm --rebuilddb` after install (the install transaction
   leaves the sqlite db full of free pages) and delete `/var/lib/dnf` build-time state.
+- **perf:** Delete the udev hardware database (hwdb.d + hwdb.bin, ~10 MiB): physical-hardware
+  ID/quirk tables that virtio devices never consult; udevd runs fine without it.
 
 ## [v0.5.0] — 2026-08-31
 

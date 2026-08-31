@@ -240,6 +240,11 @@ echo "== rpmdb: $((RPMDB_BEFORE/1024)) MiB -> $(($(du -sk "$MNT/usr/lib/sysimage
 # /usr/lib/locale (glibc-minimal-langpack) and stays
 [ -d "$MNT/usr/share/locale" ] && find "$MNT/usr/share/locale" -mindepth 1 -delete
 
+# udev hardware database: ~10 MiB of USB/PCI IDs and physical-hardware quirk
+# tables (keyboards, mice, sensors). Virtio devices need none of it; udevd just
+# logs that hwdb.bin is absent and carries on.
+rm -rf "$MNT"/usr/lib/udev/hwdb.d "$MNT"/usr/lib/udev/hwdb.bin "$MNT"/etc/udev/hwdb.bin
+
 if [ "$PROFILE" = tinycloudinit ] && [ -d "$MNT/usr/share/zoneinfo" ]; then
   # UTC-only: keep UTC (and Etc/UTC, whose parent dir then can't be removed —
   # find -delete complains about the non-empty dir, hence the || true)
