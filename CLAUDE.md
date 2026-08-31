@@ -35,11 +35,14 @@ Tiniest practical Fedora bootable cloud image. See README.md for the design.
 - [x] v0.7.0: systemd-timesyncd enabled (lives in systemd-udev — zero added bytes)
 - [x] v0.7.1 verified (2026-08-31): both smokes pass; timesyncd enabled in image;
       rpmdb VACUUM 12->11 MiB; stale artifacts removed, SHA256SUMS refreshed.
-      **tinycloudinit-0.7.1.qcow2 = 97 MB (rootfs 125 MiB), tinystorm-0.7.1.qcow2 = 159 MB**
+      **tinycloudinit qcow2 = 97 MB (rootfs 125 MiB), tinystorm (cloud) qcow2 = 158 MB**
       (v0.3.0 baseline: 303 MB / 343 MB). Earlier qcow2 sizes were inflated by
       untrimmed deleted blocks; -o discard fixed that.
       PENDING USER: `gh repo create glennswest/tztiny` (classifier-blocked for Claude);
       declined for now: dropbear (breaks scp/sftp), ca-certificates drop (~5 MiB).
+- [x] v0.7.2 verified (2026-08-31): per-build package manifests (113 pkgs tci) beside
+      artifacts + in SHA256SUMS; rpmdb journal_mode=DELETE fix confirmed — `rpm --root`
+      works on ro mounts again; both smokes pass; repos public + cross-linked + licensed.
 - Future: tztiny binary for timezone support without tzdata (../tztiny is complete, v0.1.0),
       sudo-rs evaluation, no-initramfs boot via root=PARTUUID (virtio_blk+ext4 built into
       the vmlinuz), tinycloudinit v1.1.0 growpart (replace systemd-repart path), aarch64,
