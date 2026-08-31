@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased]
+
+### 2026-08-30
+- **feat:** Locale prune (both profiles): `/usr/share/locale` translations deleted (~45 MiB);
+  C.UTF-8 from glibc-minimal-langpack remains.
+- **feat:** tinycloudinit profile drops the dnf5 stack (~35 MiB: dnf5/libdnf5/librepo/libsolv/
+  glib2/gnutls/libxml2). The image is managed from outside via `dnf5 --installroot`
+  (container-style); the rpmdb is kept for inventory. Cloud profile keeps dnf5 for
+  cloud-init `packages:`/`package_update`.
+- **feat:** tinycloudinit profile strips `/usr/share/zoneinfo` to UTC and points
+  `/etc/localtime` at it. Cloud profile keeps tzdata (cloud-init `timezone:` module).
+
 ## [v0.4.0] — 2026-08-31
 
 ### Added

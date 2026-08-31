@@ -31,7 +31,6 @@ PACKAGES=(
   systemd systemd-udev systemd-networkd systemd-resolved systemd-boot-unsigned
   dracut
   bash coreutils-single util-linux-core glibc-minimal-langpack libcurl-minimal
-  dnf5
   openssh-server
   shadow-utils sudo iproute
   dbus-broker
@@ -62,7 +61,10 @@ ROOT_TYPE=4F68BCE3-E8CD-4DB1-96E7-FBCAF984B709
 KARGS="root_karg_placeholder rw console=tty0 console=ttyS0,115200n8 selinux=0"
 
 if [ "$PROFILE" = cloud ]; then
-  PACKAGES+=(cloud-init cloud-utils-growpart e2fsprogs)
+  # dnf5 only here: cloud-init's packages:/package_update modules need a package
+  # manager, and its timezone: module needs tzdata. The tinycloudinit profile is
+  # managed container-style from outside (dnf5 --installroot) and runs UTC.
+  PACKAGES+=(dnf5 cloud-init cloud-utils-growpart e2fsprogs)
   # cloud-init >= 25 unit names (main/local/network); target ties them together
   UNITS+=(cloud-init-main.service cloud-init-local.service cloud-init-network.service
           cloud-config.service cloud-final.service cloud-init.target)
@@ -218,6 +220,17 @@ EOF
 # ---- shrink ----------------------------------------------------------------
 dnf5 -y --use-host-config --installroot="$MNT" --releasever="$RELEASEVER" clean all
 rm -rf "$MNT"/var/cache/* "$MNT"/var/log/*.log "$MNT"/root/.bash_history
+
+# translations: ~45 MiB nothing in a headless image reads; C.UTF-8 lives in
+# /usr/lib/locale (glibc-minimal-langpack) and stays
+[ -d "$MNT/usr/share/locale" ] && find "$MNT/usr/share/locale" -mindepth 1 -delete
+
+if [ "$PROFILE" = tinycloudinit ] && [ -d "$MNT/usr/share/zoneinfo" ]; then
+  # UTC-only: keep UTC (and Etc/UTC, whose parent dir then can't be removed —
+  # find -delete complains about the non-empty dir, hence the || true)
+  find "$MNT/usr/share/zoneinfo" -mindepth 1 ! -name UTC -delete 2>/dev/null || true
+  ln -sf ../usr/share/zoneinfo/UTC "$MNT/etc/localtime"
+fi
 
 umount -R "$MNT/dev" "$MNT/proc" "$MNT/sys"
 fstrim -v "$MNT/boot" || true

@@ -51,7 +51,7 @@ Cloud ~400 MB is left out deliberately.
 | Networking | `systemd-networkd` + `systemd-resolved` | Replaces NetworkManager (+ its Python/glib pile). One `.network` file does DHCP on `en*`/`eth*`. |
 | Bootloader | `systemd-boot-unsigned` | GRUB2 is ~30 MB across packages and needs os-prober/config machinery. systemd-boot is one EFI binary copied to `ESP/EFI/BOOT/BOOTX64.EFI` plus a 5-line loader entry. UEFI-only, which every current cloud supports. |
 | Shell/userland | `bash`, `coreutils-single`, `util-linux-core`, `glibc-minimal-langpack` | `coreutils-single` is the single-multicall-binary build (~1 MB vs ~6 MB). `glibc-minimal-langpack` avoids `glibc-all-langpacks` (~220 MB). `libcurl-minimal` picked explicitly so nothing pulls full libcurl. |
-| Package manager | `dnf5` | `microdnf` is retired in modern Fedora; dnf5 is the successor and is C++ with no Python dependency of its own — the smallest maintained option. (The only thing smaller is bare `rpm`, which is not a package manager.) |
+| 
 | SSH | `openssh-server` | Host keys generated on first boot. Root login off; access via cloud-init-provisioned keys for the `fedora` user. |
 | Cloud provisioning | `cloud-init`, `cloud-utils-growpart`, `e2fsprogs`, `sudo`, `shadow-utils` | cloud-init is the one unavoidable Python consumer (~60 MB with python3-libs); every cloud speaks it. `growpart` + `resize2fs` grow the root partition to the flavor's disk on first boot. Renderer pinned to `networkd` so it doesn't look for NetworkManager. **Or use the `tinycloudinit` profile above and drop all of this.** |
 | IPC | `dbus-broker` | hostnamectl/logind/resolvectl need a bus; dbus-broker is the small one. |
