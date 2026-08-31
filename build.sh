@@ -229,6 +229,13 @@ EOF
 dnf5 -y --use-host-config --installroot="$MNT" --releasever="$RELEASEVER" clean all
 rm -rf "$MNT"/var/cache/* "$MNT"/var/log/*.log "$MNT"/root/.bash_history
 
+# the install transaction leaves the sqlite rpmdb full of free pages; a rebuild
+# rewrites it compactly. dnf history/state is build-time noise either way.
+RPMDB_BEFORE="$(du -sk "$MNT/usr/lib/sysimage/rpm" | cut -f1)"
+rpm --root="$MNT" --rebuilddb
+rm -rf "$MNT"/var/lib/dnf
+echo "== rpmdb: $((RPMDB_BEFORE/1024)) MiB -> $(($(du -sk "$MNT/usr/lib/sysimage/rpm" | cut -f1)/1024)) MiB =="
+
 # translations: ~45 MiB nothing in a headless image reads; C.UTF-8 lives in
 # /usr/lib/locale (glibc-minimal-langpack) and stays
 [ -d "$MNT/usr/share/locale" ] && find "$MNT/usr/share/locale" -mindepth 1 -delete

@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### 2026-08-30
+- **perf:** Compact the rpmdb with `rpm --rebuilddb` after install (the install transaction
+  leaves the sqlite db full of free pages) and delete `/var/lib/dnf` build-time state.
+
 ## [v0.5.0] — 2026-08-31
 
 ### Added
