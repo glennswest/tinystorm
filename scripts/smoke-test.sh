@@ -90,7 +90,7 @@ else
        -o UserKnownHostsFile=/dev/null -o ConnectTimeout=3 -o BatchMode=yes
        fedora@127.0.0.1)
   for _ in $(seq "$TIMEOUT"); do
-    if OUT="$("${SSH[@]}" 'echo "MICRO_OK $(hostname) $(sudo -n id -u) $(findmnt -bno size /)"' 2>/dev/null)"; then
+    if OUT="$("${SSH[@]}" 'echo "MICRO_OK $(uname -n) $(sudo -n id -u) $(findmnt -bno size /)"' 2>/dev/null)"; then
       stop_qemu
       read -r _ HOST SUDO_UID ROOT_SIZE <<< "$OUT"
       echo "ssh login OK: hostname=$HOST sudo_uid=$SUDO_UID rootfs=$((ROOT_SIZE/1024/1024)) MB"

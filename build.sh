@@ -38,7 +38,7 @@ PACKAGES=(
 )
 UNITS=(systemd-networkd.service systemd-resolved.service sshd.service)
 # GPT root-x86-64 type: enables systemd-repart Type=root matching and gpt-auto
-ROOT_TYPE=4F68BCE3-1E14-4187-B907-06CE39F74A65
+ROOT_TYPE=4F68BCE3-E8CD-4DB1-96E7-FBCAF984B709
 KARGS="root_karg_placeholder rw console=tty0 console=ttyS0,115200n8 selinux=0"
 
 if [ "$PROFILE" = cloud ]; then
