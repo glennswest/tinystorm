@@ -5,9 +5,9 @@
 #
 # Profiles (PROFILE env, default "cloud"):
 #   cloud  — cloud-init: works with any cloud-init datasource, full user-data support
-#   tinycloudinit — afterburn + systemd-repart/growfs: no Python, ~90 MiB smaller;
-#            ssh keys/hostname/network from the Proxmox VE / NoCloud cidata drive,
-#            baked `fedora` user, platform pinned via ignition.platform.id=proxmoxve
+#   tinycloudinit — glennswest/tinycloudinit (static musl binary, ~0.6 MiB) +
+#            systemd-repart/growfs: no Python; NoCloud cidata drive with a
+#            cloud-config subset (users, ssh keys, write_files, runcmd, hostname)
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -48,11 +48,9 @@ if [ "$PROFILE" = cloud ]; then
           cloud-config.service cloud-final.service cloud-init.target)
   GROWFS_OPT=""
 else
-  PACKAGES+=(afterburn)
-  UNITS+=(afterburn-sshkeys.target afterburn-sshkeys@fedora.service
-          tinycloudinit.service systemd-repart.service)
+  TCI_VERSION=v0.1.0
+  UNITS+=(tinycloudinit.service systemd-repart.service)
   GROWFS_OPT=",x-systemd.growfs"
-  KARGS+=" ignition.platform.id=proxmoxve"
 fi
 
 LOOP=""
@@ -121,10 +119,21 @@ ln -sf ../run/systemd/resolve/stub-resolv.conf "$MNT/etc/resolv.conf"
 rm -f "$MNT/var/lib/dbus/machine-id"
 
 if [ "$PROFILE" = tinycloudinit ]; then
-  # cloud-init would create this on first boot; micro bakes it (locked password,
-  # keys arrive via afterburn from the cidata drive)
-  chroot "$MNT" useradd -m -G wheel -s /bin/bash fedora
-  chmod 0440 "$MNT/etc/sudoers.d/wheel-nopasswd"
+  # static musl binary + unit from the tinycloudinit release (cached in /build/cache);
+  # users/keys/sudo come from the seed at first boot, nothing baked
+  TCI_CACHE=/build/cache/tinycloudinit
+  TCI_TAR="$TCI_CACHE/tinycloudinit-$TCI_VERSION-x86_64-linux-musl.tar.gz"
+  if [ ! -f "$TCI_TAR" ]; then
+    mkdir -p "$TCI_CACHE"
+    (cd "$TCI_CACHE" && gh release download "$TCI_VERSION" --repo glennswest/tinycloudinit \
+       --pattern '*x86_64*' --pattern SHA256SUMS \
+     && sha256sum -c --ignore-missing SHA256SUMS)
+  fi
+  tar xzf "$TCI_TAR" -C "$WORK"
+  install -m0755 "$WORK/tinycloudinit-$TCI_VERSION/tinycloudinit" "$MNT/usr/local/sbin/tinycloudinit"
+  install -m0644 "$WORK/tinycloudinit-$TCI_VERSION/systemd/tinycloudinit.service" \
+                 "$MNT/etc/systemd/system/tinycloudinit.service"
+  rm -rf "$WORK/tinycloudinit-$TCI_VERSION"
 fi
 
 for unit in "${UNITS[@]}"; do

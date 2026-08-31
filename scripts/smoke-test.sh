@@ -39,20 +39,21 @@ cp "$OVMF_VARS" "$TESTDIR/vars.fd"
 ssh-keygen -q -t ed25519 -N '' -f "$TESTDIR/id_smoke"
 PUBKEY="$(cat "$TESTDIR/id_smoke.pub")"
 
-# seed: ISO9660 labeled 'cidata', Proxmox-style. afterburn mounts the device
-# explicitly as iso9660 and requires user-data, meta-data, vendor-data AND
-# network-config to all exist (Proxmox always writes all four).
+# seed: ISO9660 labeled 'cidata' — the same cloud-config works for both
+# cloud-init and tinycloudinit (users/keys/sudo come from the seed).
 command -v xorriso >/dev/null || dnf5 -y install xorriso
 SEEDFILES="$TESTDIR/seedfiles"
 rm -rf "$SEEDFILES"; mkdir -p "$SEEDFILES"
 cat > "$SEEDFILES/user-data" <<EOF
 #cloud-config
 hostname: ${NAME}-smoke
-password: tinystorm
-chpasswd: { expire: false }
-ssh_pwauth: true
-ssh_authorized_keys:
-  - $PUBKEY
+users:
+  - name: fedora
+    groups: wheel
+    shell: /bin/bash
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    ssh_authorized_keys:
+      - $PUBKEY
 runcmd:
   - echo "TINYSTORM_SMOKE_OK \$(uname -r)" > /dev/ttyS0
 EOF
@@ -60,8 +61,6 @@ cat > "$SEEDFILES/meta-data" <<EOF
 instance-id: ${NAME}-smoke-1
 local-hostname: ${NAME}-smoke
 EOF
-echo '{}' > "$SEEDFILES/vendor-data"
-printf 'version: 1\nconfig: []\n' > "$SEEDFILES/network-config"
 xorriso -as mkisofs -quiet -volid cidata -joliet -rock -o "$SEED" "$SEEDFILES"
 
 ACCEL=tcg; [ -w /dev/kvm ] && ACCEL=kvm
