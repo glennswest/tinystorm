@@ -89,12 +89,15 @@ ln -sf ../run/systemd/resolve/stub-resolv.conf "$MNT/etc/resolv.conf"
 : > "$MNT/etc/machine-id"
 rm -f "$MNT/var/lib/dbus/machine-id"
 
-for unit in systemd-networkd systemd-resolved sshd \
-            cloud-init-local cloud-init cloud-config cloud-final; do
-  if [ -e "$MNT/usr/lib/systemd/system/$unit.service" ]; then
-    systemctl --root="$MNT" enable "$unit.service"
+# cloud-init >= 25 unit names (main/local/network); target ties them together
+for unit in systemd-networkd.service systemd-resolved.service sshd.service \
+            cloud-init-main.service cloud-init-local.service \
+            cloud-init-network.service cloud-config.service \
+            cloud-final.service cloud-init.target; do
+  if [ -e "$MNT/usr/lib/systemd/system/$unit" ]; then
+    systemctl --root="$MNT" enable "$unit"
   else
-    echo "WARN: unit $unit.service not present, skipping" >&2
+    echo "WARN: unit $unit not present, skipping" >&2
   fi
 done
 
