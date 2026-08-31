@@ -120,8 +120,8 @@ drive (or any ISO9660 `cidata` volume with all four files). Log in as
   binary embedding the entire IANA timezone database. These images ship
   UTC-only (no tzdata); drop tztiny in and `tztiny set America/Edmonton`
   writes `/etc/localtime` directly — no zoneinfo tree needed.
-- **[tinyforge](https://github.com/glennswest/tinyforge)** — the customization
-  service: forge new goldens from these images plus any packages a user wants
+- **[tinyanvil](https://github.com/glennswest/tinyanvil)** — the customization
+  service: hammer out new goldens from these images plus any packages a user wants
   (CoW base + host-side dnf delta, sealed by
   [stormblock](https://github.com/glennswest/stormblock)) — installs without a
   package manager in the image.
