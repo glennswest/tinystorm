@@ -130,6 +130,7 @@ dnf5 -y --use-host-config --installroot="$MNT" --releasever="$RELEASEVER" clean 
 rm -rf "$MNT"/var/cache/* "$MNT"/var/log/*.log "$MNT"/root/.bash_history
 
 umount -R "$MNT/dev" "$MNT/proc" "$MNT/sys"
+fstrim -v "$MNT/boot" || true
 fstrim -v "$MNT" || true
 df -h "$MNT" "$MNT/boot"
 umount "$MNT/boot" "$MNT"

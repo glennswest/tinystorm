@@ -12,9 +12,9 @@ Tiniest practical Fedora bootable cloud image. See README.md for the design.
 
 ## Work plan
 - [x] Scaffold repo, build script, overlay, smoke test
-- [ ] First successful build on dev
-- [ ] Smoke test passes (cloud-init finishes, login prompt on serial)
-- [ ] Tag v0.1.0
+- [x] First successful build on dev (437 MB rootfs, 271 MB qcow2)
+- [x] Smoke test passes (KVM/OVMF, cloud-init 25.2 done in 13.7 s, login on serial)
+- [x] Tag v0.1.0 + GitHub release with qcow2 attached (uploaded from dev via gh)
 - Future: locale/doc pruning pass, systemd-timesyncd, aarch64, UKI single-file boot
 
 ## Notes / decisions
