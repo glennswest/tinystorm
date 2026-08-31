@@ -100,6 +100,14 @@ type=$ROOT_TYPE, name=root
 EOF
 
 LOOP="$(losetup --show -Pf "$IMG")"
+# partition nodes appear asynchronously via udev; other builds on the box churn
+# loop devices, so wait for them explicitly instead of racing mkfs
+udevadm settle 2>/dev/null || true
+for _ in $(seq 50); do
+  [ -b "${LOOP}p1" ] && [ -b "${LOOP}p2" ] && break
+  sleep 0.2
+done
+[ -b "${LOOP}p1" ] && [ -b "${LOOP}p2" ] || { echo "loop partitions for $LOOP never appeared" >&2; exit 1; }
 mkfs.fat -F32 -n ESP "${LOOP}p1" >/dev/null
 mkfs.ext4 -q -L root "${LOOP}p2"
 ROOT_UUID="$(blkid -s UUID -o value "${LOOP}p2")"

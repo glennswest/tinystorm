@@ -11,6 +11,8 @@
   cloud-init `packages:`/`package_update`.
 - **feat:** tinycloudinit profile strips `/usr/share/zoneinfo` to UTC and points
   `/etc/localtime` at it. Cloud profile keeps tzdata (cloud-init `timezone:` module).
+- **fix:** Wait for loop partition device nodes (udevadm settle + poll) after `losetup -P`
+  instead of racing mkfs — concurrent builds on the box churn loop devices.
 
 ## [v0.4.0] — 2026-08-31
 
