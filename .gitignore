@@ -1,0 +1,21 @@
+# Secrets and environment
+.env
+.env.*
+*.pem
+*.key
+
+# IDE and OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Build artifacts (images live in /build/images on the build box, never here)
+*.raw
+*.qcow2
+*.img
+*.iso
+
+# Logs and temp
+*.log
+tmp/
