@@ -1,8 +1,8 @@
 # Changelog
 
-## [Unreleased]
+## [v0.6.0] — 2026-08-31
 
-### 2026-08-30
+### Changed
 - **perf:** Compact the rpmdb with `rpm --rebuilddb` after install (the install transaction
   leaves the sqlite db full of free pages) and delete `/var/lib/dnf` build-time state.
 - **perf:** Delete the udev hardware database (hwdb.d + hwdb.bin, ~10 MiB): physical-hardware

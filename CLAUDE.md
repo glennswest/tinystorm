@@ -3,7 +3,7 @@
 Tiniest practical Fedora bootable cloud image. See README.md for the design.
 
 ## Version
-- Current: 0.5.0 (locations: `VERSION`, `CHANGELOG.md` heading)
+- Current: 0.6.0 (locations: `VERSION`, `CHANGELOG.md` heading)
 
 ## Build
 - Build box: `root@dev.g8.lo` (Fedora 43). Never build on the Mac.
@@ -30,7 +30,11 @@ Tiniest practical Fedora bootable cloud image. See README.md for the design.
       Cloud profile keeps dnf5: cloud-init `packages:`/package_update needs it.
       Also tinycloudinit-only: /usr/share/zoneinfo stripped to UTC (cloud profile keeps
       tzdata for cloud-init's `timezone:` module).
-- Future: systemd-timesyncd, aarch64, UKI single-file boot
+- [x] v0.6.0: rpmdb compaction, hwdb deletion, libcurl-minimal/dracut/cpio dropped from
+      tinycloudinit, kbd data + terminfo trim, -o discard mount (deterministic qcow2 size)
+- Future: tztiny binary for timezone support without tzdata (../tztiny), sudo-rs evaluation,
+      no-initramfs boot via root=PARTUUID (virtio_blk+ext4 are built into the vmlinuz),
+      systemd-timesyncd, aarch64, UKI single-file boot
 
 ## tinycloudinit profile decisions
 - v0.3.0: uses glennswest/tinycloudinit release binary (static musl, /usr/local/sbin) + its
