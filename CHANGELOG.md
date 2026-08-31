@@ -1,8 +1,8 @@
 # Changelog
 
-## [Unreleased]
+## [v0.4.0] — 2026-08-31
 
-### 2026-08-30
+### Added
 - **feat:** VM-only kernel module prune (default on, `TRIM_MODULES=0` to skip): keep a
   QEMU/KVM/Proxmox guest whitelist (virtio*, ahci/ata, nvme, sd/sr, isofs/vfat/nls,
   fuse/virtiofs, vsock, e1000/e1000e, bochs/virtio_gpu, nfnetlink) plus its modules.dep

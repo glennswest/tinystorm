@@ -3,7 +3,7 @@
 Tiniest practical Fedora bootable cloud image. See README.md for the design.
 
 ## Version
-- Current: 0.3.0 (locations: `VERSION`, `CHANGELOG.md` heading)
+- Current: 0.4.0 (locations: `VERSION`, `CHANGELOG.md` heading)
 
 ## Build
 - Build box: `root@dev.g8.lo` (Fedora 43). Never build on the Mac.
@@ -19,7 +19,7 @@ Tiniest practical Fedora bootable cloud image. See README.md for the design.
       rootfs 340 MB (vs 437 MB); smoke test does real ssh login + sudo + growfs verification
 - [x] v0.3.0: afterburn replaced by the glennswest/tinycloudinit static binary (682 KB);
       seed-driven users, no baked account, no sshd drop-in, no platform-id karg
-- [ ] v0.4.0 (in progress): VM-only kernel module prune — keep lsmod-derived whitelist
+- [x] v0.4.0: VM-only kernel module prune — keep lsmod-derived whitelist
       (virtio*, ahci/ata, nvme, sd/sr, isofs/vfat/nls, fuse/virtiofs, vsock, e1000/e1000e)
       + modules.dep closure, delete the rest, depmod, then dracut; drop the duplicate
       vmlinuz from /lib/modules. TRIM_MODULES=0 to skip. Expected ≥100 MiB off the rootfs.
