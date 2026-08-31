@@ -3,7 +3,7 @@
 Tiniest practical Fedora bootable cloud image. See README.md for the design.
 
 ## Version
-- Current: 0.2.0 (locations: `VERSION`, `CHANGELOG.md` heading)
+- Current: 0.3.0 (locations: `VERSION`, `CHANGELOG.md` heading)
 
 ## Build
 - Build box: `root@dev.g8.lo` (Fedora 43). Never build on the Mac.
@@ -17,9 +17,17 @@ Tiniest practical Fedora bootable cloud image. See README.md for the design.
 - [x] Tag v0.1.0 + GitHub release with qcow2 attached (uploaded from dev via gh)
 - [x] v0.2.0: `tinycloudinit` profile — cloud-init replaced by afterburn + systemd-repart/growfs;
       rootfs 340 MB (vs 437 MB); smoke test does real ssh login + sudo + growfs verification
+- [x] v0.3.0: afterburn replaced by the glennswest/tinycloudinit static binary (682 KB);
+      seed-driven users, no baked account, no sshd drop-in, no platform-id karg
 - Future: locale/doc pruning pass, systemd-timesyncd, aarch64, UKI single-file boot
 
-## tinycloudinit profile decisions (measured 2026-08-30)
+## tinycloudinit profile decisions
+- v0.3.0: uses glennswest/tinycloudinit release binary (static musl, /usr/local/sbin) + its
+  systemd unit, fetched via gh into /build/cache/tinycloudinit and verified against SHA256SUMS.
+  It writes plain ~/.ssh/authorized_keys and its own /etc/sudoers.d rules; supports existing
+  users. afterburn notes below kept for history (v0.2.0).
+
+## afterburn-era decisions (v0.2.0, superseded; measured 2026-08-30)
 - Removing cloud-init+python3+growpart+e2fsprogs frees 90 MiB / 48 packages (dnf5 dry run on image).
 - afterburn 5.10 proxmoxve provider: finds drive via `blkid -L cidata` (lowercase label!), mounts it
   explicitly as iso9660 (vfat seeds do NOT work), requires user-data+meta-data+vendor-data+

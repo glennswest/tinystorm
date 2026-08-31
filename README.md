@@ -9,34 +9,31 @@ Two profiles:
 | Profile | Image | Rootfs | Provisioning | Use when |
 |---|---|---|---|---|
 | `cloud` (default) | `tinystorm-*` | ~437 MB | cloud-init 25.2 | You need full user-data support (runcmd, packages, arbitrary datasources) |
-| `tinycloudinit` | `tinycloudinit-*` | ~340 MB | afterburn + systemd | Proxmox VE / NoCloud-style cidata drive; ssh keys + hostname + growfs + DHCP is enough |
+| `tinycloudinit` | `tinycloudinit-*` | ~335 MB | [tinycloudinit](https://github.com/glennswest/tinycloudinit) + systemd | NoCloud cidata drive; users/keys/sudo/write_files/runcmd/hostname/growfs/DHCP |
 
 ## tinycloudinit — the cloud-init replacement
 
 cloud-init is the one thing that forces Python into the image (~90 MiB across
-48 packages). The `tinycloudinit` profile replaces it with pieces that are
-either already in the image or tiny:
+48 packages, python3-libs alone is 43 MB). The `tinycloudinit` profile replaces
+it with a **682 KB static musl binary**:
 
-- **afterburn** (6.8 MiB, Rust, in Fedora repos — Fedora CoreOS's metadata
-  agent): reads the Proxmox VE cloud-init drive (ISO9660 labeled `cidata`,
-  the standard Proxmox format with `user-data`/`meta-data`/`vendor-data`/
-  `network-config`), injects `ssh_authorized_keys` for the baked `fedora`
-  user, and provides hostname + static network config.
-  `afterburn-sshkeys@fedora.service` is gated on `ignition.platform.id=proxmoxve`,
-  which the image bakes into its kernel cmdline. An sshd drop-in points
-  `AuthorizedKeysFile` at `~/.ssh/authorized_keys.d/afterburn`.
-- **tinycloudinit.service**: small oneshot that applies the hostname and drops
-  afterburn-rendered networkd units into `/run/systemd/network` before
-  networking starts. Best-effort — a missing drive never fails the boot.
+- **[tinycloudinit](https://github.com/glennswest/tinycloudinit)** (Rust,
+  installed from its GitHub release, cached in `/build/cache`): NoCloud
+  datasource (iso9660/vfat `cidata` volume or seed dir) with the useful
+  cloud-config subset — `users` (incl. `sudo`, `ssh_authorized_keys`,
+  `passwd`), top-level `ssh_authorized_keys` (root), `hostname`/`fqdn`/
+  `manage_etc_hosts`, `write_files`, `runcmd`, shell-script user-data, and
+  run-once-per-instance-id semantics. Writes plain `~/.ssh/authorized_keys`,
+  so stock sshd just works. Nothing is baked into the image — users come from
+  the seed, like cloud-init.
 - **systemd-repart + x-systemd.growfs**: first-boot disk growth with zero
   extra packages (replaces cloud-utils-growpart + e2fsprogs). The root
   partition carries the root-x86-64 GPT type GUID so `Type=root` matching works.
-- The `fedora` user (wheel, NOPASSWD sudo, locked password) is created at
-  build time instead of by cloud-init at first boot.
+- DHCP networking is already handled by the baked systemd-networkd config.
 
-What you give up vs cloud-init: arbitrary user-data modules (runcmd, packages,
-write_files, ...) and non-Proxmox datasources (EC2/GCE/Azure metadata would
-need the platform id changed and afterburn units adjusted).
+What you give up vs cloud-init: package installation, network-config
+rendering (use DHCP or write networkd units via `write_files`), multi-part
+MIME, and network datasources (EC2 IMDS is planned in tinycloudinit v0.2).
 
 ## Design
 

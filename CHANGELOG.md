@@ -1,5 +1,16 @@
 # Changelog
 
+## [v0.3.0] — 2026-08-31
+
+### Changed
+- **feat:** `tinycloudinit` profile now uses the glennswest/tinycloudinit static musl binary
+  (682 KB) instead of afterburn (6.8 MiB): full cloud-config subset (users/sudo/keys/
+  write_files/runcmd/hostname), plain authorized_keys (sshd drop-in removed), no baked user,
+  no `ignition.platform.id` kernel arg, works with any iso9660/vfat `cidata` volume.
+- **refactor:** Smoke seed is a single cloud-config valid for both profiles (seed-defined
+  `fedora` user with NOPASSWD sudo and ssh key).
+
+
 ## [v0.2.0] — 2026-08-31
 
 ### Added
