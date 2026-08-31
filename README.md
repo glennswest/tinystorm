@@ -133,7 +133,9 @@ packages' own licenses:
 - Every package's license text ships **inside the image** at
   `/usr/share/licenses/` — this directory is deliberately never pruned,
   precisely so redistributed images stay self-documenting.
-- The exact package set is recorded in the image's rpmdb
+- Every build writes a `<image>-<version>.manifest.txt` beside the artifacts:
+  the full package inventory (name, version-release, arch, license) of that
+  exact image. The same data lives in the image's rpmdb
   (`/usr/lib/sysimage/rpm`, query from outside with
   `rpm --root=<mnt> -qa --qf '%{NAME} %{LICENSE}\n'`).
 - Corresponding sources for every package are the Fedora SRPMs, available

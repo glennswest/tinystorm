@@ -275,6 +275,17 @@ if [ "$PROFILE" = tinycloudinit ] && [ -d "$MNT/usr/share/zoneinfo" ]; then
   ln -sf ../usr/share/zoneinfo/UTC "$MNT/etc/localtime"
 fi
 
+# ---- package manifest (license compliance artifact) ------------------------
+# full inventory of what the image contains, shipped beside it; read-only rpm
+# query works from the host (only write/lock ops are SELinux-blocked)
+MANIFEST="$WORK/${NAME}-${VERSION}.manifest.txt"
+{
+  echo "# ${NAME} ${VERSION} — Fedora ${RELEASEVER} package manifest ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
+  echo "# name	version-release	arch	license"
+  rpm --root="$MNT" -qa --qf '%{NAME}\t%{VERSION}-%{RELEASE}\t%{ARCH}\t%{LICENSE}\n' | sort
+} > "$MANIFEST"
+echo "== manifest: $(($(wc -l < "$MANIFEST")-2)) packages -> $MANIFEST =="
+
 umount -R "$MNT/dev" "$MNT/proc" "$MNT/sys"
 fstrim -v "$MNT/boot" || true
 fstrim -v "$MNT" || true

@@ -3,6 +3,9 @@
 ## [Unreleased]
 
 ### 2026-08-31
+- **feat:** Every build now emits `<image>-<version>.manifest.txt` — full package inventory
+  (name, version-release, arch, license) of the exact image, for license compliance;
+  manifests are covered by SHA256SUMS.
 - **docs:** README brought current: v0.7.1 sizes (97 MB / 159 MB qcow2), build-script-first
   framing, new "License & Fedora compliance" section (in-image /usr/share/licenses retained,
   SRPM source pointers, trademark disclaimer).
