@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+### 2026-08-31
+- **docs:** README brought current: v0.7.1 sizes (97 MB / 159 MB qcow2), build-script-first
+  framing, new "License & Fedora compliance" section (in-image /usr/share/licenses retained,
+  SRPM source pointers, trademark disclaimer).
+- **chore:** MIT LICENSE file added; repository made public.
+
 ## [v0.7.1] — 2026-08-31
 
 ### Fixed

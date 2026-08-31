@@ -1,15 +1,24 @@
 # tinystorm
 
-The tiniest practical Fedora bootable image for cloud use. One raw/qcow2 disk
-image with exactly what a cloud guest needs and nothing else: bash, systemd,
-sshd, cloud provisioning, and the smallest maintained package manager.
+The tiniest practical Fedora-based bootable image for cloud use. One raw/qcow2
+disk image with exactly what a cloud guest needs and nothing else: bash,
+systemd, sshd, time sync, and seed-driven cloud provisioning. The build scripts
+(`build.sh`, `scripts/smoke-test.sh`) are the whole product — every image is
+reproducible from this repo on a stock Fedora build host.
 
 Two profiles:
 
-| Profile | Image | Rootfs | Provisioning | Use when |
-|---|---|---|---|---|
-| `cloud` (default) | `tinystorm-*` | ~437 MB | cloud-init 25.2 | You need full user-data support (runcmd, packages, arbitrary datasources) |
-| `tinycloudinit` | `tinycloudinit-*` | ~335 MB | [tinycloudinit](https://github.com/glennswest/tinycloudinit) + systemd | NoCloud cidata drive; users/keys/sudo/write_files/runcmd/hostname/growfs/DHCP |
+| Profile | Image | qcow2 | Rootfs | Provisioning | Use when |
+|---|---|---|---|---|---|
+| `cloud` (default) | `tinystorm-*` | **159 MB** | 284 MiB | cloud-init 25.2 | You need full user-data support (runcmd, packages, arbitrary datasources) |
+| `tinycloudinit` | `tinycloudinit-*` | **97 MB** | 125 MiB | [tinycloudinit](https://github.com/glennswest/tinycloudinit) + systemd | NoCloud cidata drive; users/keys/sudo/write_files/runcmd/hostname/growfs/DHCP |
+
+(v0.7.1, measured on the built images. The v0.1.0 baseline was 271 MB / 437 MiB;
+the drop comes from a VM-only kernel module prune, removing the package manager
+and all TLS/locale/tzdata/hwdb userland from the tinycloudinit profile, and
+trim-correct image conversion. Both profiles boot to sshd in ~10-16 s under
+QEMU/KVM and are smoke-tested on every build: real ssh login, sudo, first-boot
+disk growth.)
 
 ## tinycloudinit — the cloud-init replacement
 
@@ -100,3 +109,28 @@ Boot UEFI. `cloud`: attach any cloud-init datasource (NoCloud, OpenStack,
 Proxmox cloudinit drive...). `tinycloudinit`: attach a Proxmox cloudinit
 drive (or any ISO9660 `cidata` volume with all four files). Log in as
 `fedora` with your provisioned key. Install more packages with `dnf5 install`.
+
+## License & Fedora compliance
+
+The build scripts and configuration in this repository are MIT-licensed (see
+`LICENSE`).
+
+The **built images** contain unmodified binary packages from
+[Fedora Linux](https://fedoraproject.org/) 43 and are subject to those
+packages' own licenses:
+
+- Every package's license text ships **inside the image** at
+  `/usr/share/licenses/` — this directory is deliberately never pruned,
+  precisely so redistributed images stay self-documenting.
+- The exact package set is recorded in the image's rpmdb
+  (`/usr/lib/sysimage/rpm`, query from outside with
+  `rpm --root=<mnt> -qa --qf '%{NAME} %{LICENSE}\n'`).
+- Corresponding sources for every package are the Fedora SRPMs, available
+  from the [Fedora mirrors](https://dl.fedoraproject.org/pub/fedora/linux/)
+  and package sources at [src.fedoraproject.org](https://src.fedoraproject.org/).
+  Nothing here modifies any Fedora package.
+- Fedora is a trademark of Red Hat, Inc. This is an independent, unofficial
+  build assembled from Fedora Linux packages; it is not produced, endorsed, or
+  supported by the Fedora Project, and the images install no Fedora logo or
+  branding packages. If you redistribute modified variants, review the
+  [Fedora trademark guidelines](https://fedoraproject.org/wiki/Legal:Trademark_guidelines).
