@@ -29,6 +29,8 @@ OVMF_VARS=/usr/share/edk2/ovmf/OVMF_VARS.fd
 [ -f "$OVMF_CODE" ] || { echo "OVMF not found at $OVMF_CODE" >&2; exit 1; }
 
 mkdir -p "$TESTDIR"
+# kill a stale VM from an aborted previous run (it would hold the ssh port)
+{ [ -f "$TESTDIR/qemu.pid" ] && kill "$(cat "$TESTDIR/qemu.pid")" 2>/dev/null && sleep 1; } || true
 rm -f "$SEED" "$DISK" "$LOG" "$TESTDIR/qemu.pid" "$TESTDIR/id_smoke"*
 cp --sparse=always "$IMG" "$DISK"
 truncate -s 5G "$DISK"          # bigger than the 3G image: growth must kick in
