@@ -23,9 +23,14 @@ Tiniest practical Fedora bootable cloud image. See README.md for the design.
       (virtio*, ahci/ata, nvme, sd/sr, isofs/vfat/nls, fuse/virtiofs, vsock, e1000/e1000e)
       + modules.dep closure, delete the rest, depmod, then dracut; drop the duplicate
       vmlinuz from /lib/modules. TRIM_MODULES=0 to skip. Expected ≥100 MiB off the rootfs.
-- Future: locale/doc pruning pass (45 MiB in /usr/share/locale), optional no-dnf5 build
-      (~35 MiB; container-style outside-installroot management), systemd-timesyncd, aarch64,
-      UKI single-file boot
+- [ ] v0.5.0 (in progress): locale prune (45 MiB of /usr/share/locale, both profiles;
+      C.UTF-8 from glibc-minimal-langpack stays) + drop dnf5 stack from tinycloudinit
+      profile (~35 MiB: dnf5/libdnf5/librepo/libsolv/glib2/gnutls/libxml2; container-style
+      — image managed from outside via dnf5 --installroot; rpmdb kept for inventory).
+      Cloud profile keeps dnf5: cloud-init `packages:`/package_update needs it.
+      Also tinycloudinit-only: /usr/share/zoneinfo stripped to UTC (cloud profile keeps
+      tzdata for cloud-init's `timezone:` module).
+- Future: systemd-timesyncd, aarch64, UKI single-file boot
 
 ## tinycloudinit profile decisions
 - v0.3.0: uses glennswest/tinycloudinit release binary (static musl, /usr/local/sbin) + its
