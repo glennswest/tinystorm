@@ -1,8 +1,8 @@
 # Changelog
 
-## [Unreleased]
+## [v0.7.0] — 2026-08-31
 
-### 2026-08-30
+### Added
 - **feat:** Enable systemd-timesyncd (both profiles). It ships inside systemd-udev, so time
   sync costs zero bytes; networkd feeds it DHCP NTP servers, Fedora pool as fallback.
 

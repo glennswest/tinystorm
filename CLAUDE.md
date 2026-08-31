@@ -3,7 +3,7 @@
 Tiniest practical Fedora bootable cloud image. See README.md for the design.
 
 ## Version
-- Current: 0.6.0 (locations: `VERSION`, `CHANGELOG.md` heading)
+- Current: 0.7.0 (locations: `VERSION`, `CHANGELOG.md` heading)
 
 ## Build
 - Build box: `root@dev.g8.lo` (Fedora 43). Never build on the Mac.
