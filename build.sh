@@ -30,7 +30,7 @@ PACKAGES=(
   kernel-core
   systemd systemd-udev systemd-networkd systemd-resolved systemd-boot-unsigned
   dracut
-  bash coreutils-single util-linux-core glibc-minimal-langpack libcurl-minimal
+  bash coreutils-single util-linux-core glibc-minimal-langpack
   openssh-server
   shadow-utils sudo iproute
   dbus-broker
@@ -64,7 +64,9 @@ if [ "$PROFILE" = cloud ]; then
   # dnf5 only here: cloud-init's packages:/package_update modules need a package
   # manager, and its timezone: module needs tzdata. The tinycloudinit profile is
   # managed container-style from outside (dnf5 --installroot) and runs UTC.
-  PACKAGES+=(dnf5 cloud-init cloud-utils-growpart e2fsprogs)
+  # libcurl-minimal named explicitly so dnf5's librepo never pulls full libcurl;
+  # tinycloudinit has no libcurl consumer at all (the tci binary is static musl).
+  PACKAGES+=(dnf5 libcurl-minimal cloud-init cloud-utils-growpart e2fsprogs)
   # cloud-init >= 25 unit names (main/local/network); target ties them together
   UNITS+=(cloud-init-main.service cloud-init-local.service cloud-init-network.service
           cloud-config.service cloud-final.service cloud-init.target)
@@ -113,9 +115,11 @@ mkfs.ext4 -q -L root "${LOOP}p2"
 ROOT_UUID="$(blkid -s UUID -o value "${LOOP}p2")"
 ESP_UUID="$(blkid -s UUID -o value "${LOOP}p1")"
 
-mount "${LOOP}p2" "$MNT"
+# -o discard: deletions punch holes in the backing file immediately, so the
+# final qcow2 doesn't depend on how much of the freed space fstrim reaches
+mount -o discard "${LOOP}p2" "$MNT"
 mkdir -p "$MNT/boot"
-mount "${LOOP}p1" "$MNT/boot"
+mount -o discard "${LOOP}p1" "$MNT/boot"
 
 # scriptlets (kernel, systemd) want these
 mkdir -p "$MNT"/{dev,proc,sys}
@@ -226,8 +230,23 @@ options ${KARGS/root_karg_placeholder/root=UUID=$ROOT_UUID}
 EOF
 
 # ---- shrink ----------------------------------------------------------------
+if [ "$PROFILE" = tinycloudinit ]; then
+  # the initramfs is built; the tool to rebuild it is dead weight in an image
+  # that gets updated by rebuilding (cpio is dracut's, nothing else needs it)
+  dnf5 -y --use-host-config --installroot="$MNT" --releasever="$RELEASEVER" \
+    remove dracut cpio
+fi
 dnf5 -y --use-host-config --installroot="$MNT" --releasever="$RELEASEVER" clean all
 rm -rf "$MNT"/var/cache/* "$MNT"/var/log/*.log "$MNT"/root/.bash_history
+
+# console keymaps/fonts (kbd-misc): serial+ssh image, the console stays US
+rm -rf "$MNT"/usr/lib/kbd
+
+# terminfo: keep the terminals a VM console/ssh session actually presents
+find "$MNT/usr/share/terminfo" -type f \
+  ! -name 'linux*' ! -name 'vt10*' ! -name 'vt22*' ! -name 'xterm*' \
+  ! -name 'screen*' ! -name 'tmux*' ! -name 'dumb' ! -name 'ansi*' -delete
+find "$MNT/usr/share/terminfo" -type d -empty -delete
 
 # the install transaction leaves the sqlite rpmdb full of free pages; a rebuild
 # rewrites it compactly. dnf history/state is build-time noise either way.

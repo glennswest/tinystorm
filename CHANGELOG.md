@@ -7,6 +7,16 @@
   leaves the sqlite db full of free pages) and delete `/var/lib/dnf` build-time state.
 - **perf:** Delete the udev hardware database (hwdb.d + hwdb.bin, ~10 MiB): physical-hardware
   ID/quirk tables that virtio devices never consult; udevd runs fine without it.
+- **perf:** Drop libcurl-minimal from the tinycloudinit profile (~3 MiB with libidn2/
+  libunistring/libnghttp2): nothing consumes libcurl there — the tci binary is static musl.
+  Cloud profile keeps it explicitly so dnf5 never pulls full libcurl.
+- **perf:** tinycloudinit profile removes dracut+cpio after the initramfs is built (~2.5 MiB);
+  image updates are rebuilds, not in-place kernel swaps.
+- **perf:** Delete console keymaps/fonts (/usr/lib/kbd, ~2.5 MiB) and trim terminfo to
+  linux/vt/xterm/screen/tmux/dumb/ansi (~1 MiB).
+- **fix:** Mount the build image with `-o discard` so deletions punch holes in the backing
+  file immediately — qcow2 size no longer depends on how much freed space fstrim reaches
+  (one build came out 209 MB instead of 176 MB from untrimmed deleted blocks).
 
 ## [v0.5.0] — 2026-08-31
 
