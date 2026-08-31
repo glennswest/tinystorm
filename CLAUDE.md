@@ -33,16 +33,13 @@ Tiniest practical Fedora bootable cloud image. See README.md for the design.
 - [x] v0.6.0: rpmdb compaction, hwdb deletion, libcurl-minimal/dracut/cpio dropped from
       tinycloudinit, kbd data + terminfo trim, -o discard mount (deterministic qcow2 size)
 - [x] v0.7.0: systemd-timesyncd enabled (lives in systemd-udev — zero added bytes)
-- [ ] IN FLIGHT (2026-08-31 ~04:40, dev may be shut down overnight): v0.7.1 build+smoke
-      pipeline was running detached on dev (`/build/images/tinystorm/pipeline.status` says
-      ALL_DONE when complete; logs build-tci/build-cloud/smoke-tci/smoke-cloud.log).
-      All source is committed/pushed through tag v0.7.1 — nothing on dev is unique.
-      ON RESUME: on dev `cd /root/tinystorm && git pull`, run both PROFILE builds +
-      smoke tests, verify "rpmdb:" line (sqlite VACUUM fix) + timesyncd active in guest,
-      then `rm -f *0.6.0* *0.5.0*` stale artifacts (0.4.0 already gone), regenerate
-      SHA256SUMS for the 0.7.1 qcow2s. Expected: tci ~160 MB qcow2 / ~150 MiB rootfs.
-      PENDING USER: `gh repo create glennswest/tztiny` (classifier-blocked here);
-      decisions on dropping ca-certificates (~5 MiB) and dropbear (declined for now).
+- [x] v0.7.1 verified (2026-08-31): both smokes pass; timesyncd enabled in image;
+      rpmdb VACUUM 12->11 MiB; stale artifacts removed, SHA256SUMS refreshed.
+      **tinycloudinit-0.7.1.qcow2 = 97 MB (rootfs 125 MiB), tinystorm-0.7.1.qcow2 = 159 MB**
+      (v0.3.0 baseline: 303 MB / 343 MB). Earlier qcow2 sizes were inflated by
+      untrimmed deleted blocks; -o discard fixed that.
+      PENDING USER: `gh repo create glennswest/tztiny` (classifier-blocked for Claude);
+      declined for now: dropbear (breaks scp/sftp), ca-certificates drop (~5 MiB).
 - Future: tztiny binary for timezone support without tzdata (../tztiny is complete, v0.1.0),
       sudo-rs evaluation, no-initramfs boot via root=PARTUUID (virtio_blk+ext4 built into
       the vmlinuz), tinycloudinit v1.1.0 growpart (replace systemd-repart path), aarch64,
