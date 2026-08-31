@@ -128,7 +128,10 @@ if [ "$PROFILE" = micro ]; then
 fi
 
 for unit in "${UNITS[@]}"; do
-  if [ -e "$MNT/usr/lib/systemd/system/$unit" ] || [ -e "$MNT/etc/systemd/system/$unit" ]; then
+  # instance units (foo@bar.service) are backed by their template file (foo@.service)
+  file="$unit"
+  case "$unit" in *@*.*) file="${unit%@*}@.${unit##*.}" ;; esac
+  if [ -e "$MNT/usr/lib/systemd/system/$file" ] || [ -e "$MNT/etc/systemd/system/$file" ]; then
     systemctl --root="$MNT" enable "$unit"
   else
     echo "WARN: unit $unit not present, skipping" >&2
