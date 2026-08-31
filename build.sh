@@ -35,7 +35,9 @@ PACKAGES=(
   shadow-utils sudo iproute
   dbus-broker
 )
-UNITS=(systemd-networkd.service systemd-resolved.service sshd.service)
+# timesyncd ships inside systemd-udev (already installed): SNTP for free.
+# networkd hands it DHCP-provided NTP servers; Fedora pool is the fallback.
+UNITS=(systemd-networkd.service systemd-resolved.service systemd-timesyncd.service sshd.service)
 
 # VM-guest module whitelist (TRIM_MODULES=0 keeps the full tree). Derived from a
 # probe boot's lsmod under QEMU q35/KVM plus what other hypervisor configs need:

@@ -32,9 +32,11 @@ Tiniest practical Fedora bootable cloud image. See README.md for the design.
       tzdata for cloud-init's `timezone:` module).
 - [x] v0.6.0: rpmdb compaction, hwdb deletion, libcurl-minimal/dracut/cpio dropped from
       tinycloudinit, kbd data + terminfo trim, -o discard mount (deterministic qcow2 size)
-- Future: tztiny binary for timezone support without tzdata (../tztiny), sudo-rs evaluation,
-      no-initramfs boot via root=PARTUUID (virtio_blk+ext4 are built into the vmlinuz),
-      systemd-timesyncd, aarch64, UKI single-file boot
+- [x] v0.7.0: systemd-timesyncd enabled (lives in systemd-udev — zero added bytes)
+- Future: tztiny binary for timezone support without tzdata (../tztiny is complete, v0.1.0),
+      sudo-rs evaluation, no-initramfs boot via root=PARTUUID (virtio_blk+ext4 built into
+      the vmlinuz), tinycloudinit v1.1.0 growpart (replace systemd-repart path), aarch64,
+      UKI single-file boot
 
 ## tinycloudinit profile decisions
 - v0.3.0: uses glennswest/tinycloudinit release binary (static musl, /usr/local/sbin) + its
