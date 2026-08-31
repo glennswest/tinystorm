@@ -9,10 +9,10 @@ ConditionKernelCommandLine=ignition.platform.id=proxmoxve
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-RuntimeDirectory=tinystorm
+RuntimeDirectory=tinycloudinit
 ExecStartPre=/usr/bin/mkdir -p /run/systemd/network
-ExecStart=-/usr/bin/afterburn --cmdline --hostname=/run/tinystorm/hostname --network-units=/run/systemd/network
-ExecStartPost=-/usr/bin/bash -c 'h="$(cat /run/tinystorm/hostname 2>/dev/null)"; if [ -n "$h" ]; then echo "$h" > /etc/hostname; echo "$h" > /proc/sys/kernel/hostname; fi'
+ExecStart=-/usr/bin/afterburn --cmdline --hostname=/run/tinycloudinit/hostname --network-units=/run/systemd/network
+ExecStartPost=-/usr/bin/bash -c 'h="$(cat /run/tinycloudinit/hostname 2>/dev/null)"; if [ -n "$h" ]; then echo "$h" > /etc/hostname; echo "$h" > /proc/sys/kernel/hostname; fi'
 
 [Install]
 WantedBy=multi-user.target

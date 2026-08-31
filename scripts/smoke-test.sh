@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Boot the built image under QEMU/OVMF with a NoCloud/Proxmox-style cidata seed.
 #   cloud (default): wait for cloud-init to finish and a serial login prompt.
-#   micro:           ssh in as fedora with the afterburn-injected key, check
+#   tinycloudinit:   ssh in as fedora with the afterburn-injected key, check
 #                    sudo and that systemd-repart grew the root fs.
-# Runs as root on the build box. PROFILE=micro ./scripts/smoke-test.sh
+# Runs as root on the build box. PROFILE=tinycloudinit ./scripts/smoke-test.sh
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")/.." && pwd)"
@@ -11,7 +11,7 @@ VERSION="$(cat "$HERE/VERSION")"
 PROFILE="${PROFILE:-cloud}"
 case "$PROFILE" in
   cloud) NAME="tinystorm" ;;
-  micro) NAME="tinystorm-micro" ;;
+  tinycloudinit) NAME="tinycloudinit" ;;
   *) echo "unknown PROFILE '$PROFILE'" >&2; exit 1 ;;
 esac
 WORK=/build/images/tinystorm
@@ -37,13 +37,13 @@ cp "$OVMF_VARS" "$TESTDIR/vars.fd"
 ssh-keygen -q -t ed25519 -N '' -f "$TESTDIR/id_smoke"
 PUBKEY="$(cat "$TESTDIR/id_smoke.pub")"
 
-# seed: vfat labeled 'cidata' (lowercase — afterburn matches the label exactly)
-truncate -s 4M "$SEED"
-mkfs.fat -n cidata "$SEED" >/dev/null 2>&1
-SEEDMNT="$TESTDIR/seedmnt"
-mkdir -p "$SEEDMNT"
-mount -o loop "$SEED" "$SEEDMNT"
-cat > "$SEEDMNT/user-data" <<EOF
+# seed: ISO9660 labeled 'cidata', Proxmox-style. afterburn mounts the device
+# explicitly as iso9660 and requires user-data, meta-data, vendor-data AND
+# network-config to all exist (Proxmox always writes all four).
+command -v xorriso >/dev/null || dnf5 -y install xorriso
+SEEDFILES="$TESTDIR/seedfiles"
+rm -rf "$SEEDFILES"; mkdir -p "$SEEDFILES"
+cat > "$SEEDFILES/user-data" <<EOF
 #cloud-config
 hostname: ${NAME}-smoke
 password: tinystorm
@@ -54,11 +54,13 @@ ssh_authorized_keys:
 runcmd:
   - echo "TINYSTORM_SMOKE_OK \$(uname -r)" > /dev/ttyS0
 EOF
-cat > "$SEEDMNT/meta-data" <<EOF
+cat > "$SEEDFILES/meta-data" <<EOF
 instance-id: ${NAME}-smoke-1
 local-hostname: ${NAME}-smoke
 EOF
-umount "$SEEDMNT"
+echo '{}' > "$SEEDFILES/vendor-data"
+printf 'version: 1\nconfig: []\n' > "$SEEDFILES/network-config"
+xorriso -as mkisofs -quiet -volid cidata -joliet -rock -o "$SEED" "$SEEDFILES"
 
 ACCEL=tcg; [ -w /dev/kvm ] && ACCEL=kvm
 qemu-system-x86_64 -machine q35,accel=$ACCEL -m 1024 -smp 2 -display none \

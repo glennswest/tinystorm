@@ -5,7 +5,7 @@
 #
 # Profiles (PROFILE env, default "cloud"):
 #   cloud  — cloud-init: works with any cloud-init datasource, full user-data support
-#   micro  — afterburn + systemd-repart/growfs: no Python, ~90 MiB smaller;
+#   tinycloudinit — afterburn + systemd-repart/growfs: no Python, ~90 MiB smaller;
 #            ssh keys/hostname/network from the Proxmox VE / NoCloud cidata drive,
 #            baked `fedora` user, platform pinned via ignition.platform.id=proxmoxve
 set -euo pipefail
@@ -19,8 +19,8 @@ ESP_MIB=256
 WORK=/build/images/tinystorm
 case "$PROFILE" in
   cloud) NAME="tinystorm" ;;
-  micro) NAME="tinystorm-micro" ;;
-  *) echo "unknown PROFILE '$PROFILE' (cloud|micro)" >&2; exit 1 ;;
+  tinycloudinit) NAME="tinycloudinit" ;;
+  *) echo "unknown PROFILE '$PROFILE' (cloud|tinycloudinit)" >&2; exit 1 ;;
 esac
 IMG="$WORK/${NAME}-${VERSION}.raw"
 QCOW="$WORK/${NAME}-${VERSION}.qcow2"
@@ -50,7 +50,7 @@ if [ "$PROFILE" = cloud ]; then
 else
   PACKAGES+=(afterburn)
   UNITS+=(afterburn-sshkeys.target afterburn-sshkeys@fedora.service
-          tinystorm-metadata.service systemd-repart.service)
+          tinycloudinit.service systemd-repart.service)
   GROWFS_OPT=",x-systemd.growfs"
   KARGS+=" ignition.platform.id=proxmoxve"
 fi
@@ -120,7 +120,7 @@ ln -sf ../run/systemd/resolve/stub-resolv.conf "$MNT/etc/resolv.conf"
 : > "$MNT/etc/machine-id"
 rm -f "$MNT/var/lib/dbus/machine-id"
 
-if [ "$PROFILE" = micro ]; then
+if [ "$PROFILE" = tinycloudinit ]; then
   # cloud-init would create this on first boot; micro bakes it (locked password,
   # keys arrive via afterburn from the cidata drive)
   chroot "$MNT" useradd -m -G wheel -s /bin/bash fedora
