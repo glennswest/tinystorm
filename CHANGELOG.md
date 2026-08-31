@@ -1,5 +1,14 @@
 # Changelog
 
+## [v0.7.1] — 2026-08-31
+
+### Fixed
+- **fix:** rpmdb compaction uses sqlite VACUUM on the db file instead of host
+  `rpm --root --rebuilddb`, which SELinux (Enforcing on the build box) blocks from taking
+  the transaction lock inside the image tree — the v0.6.0/v0.7.0 builds aborted there.
+  Bonus found in the same build: dnf5's dracut removal autoremoves its unused deps
+  (libstdc++, zstd, xz, lz4-libs, procps-ng, libkcapi) — 10 MiB freed, not 2.5.
+
 ## [v0.7.0] — 2026-08-31
 
 ### Added

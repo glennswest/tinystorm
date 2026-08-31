@@ -250,10 +250,12 @@ find "$MNT/usr/share/terminfo" -type f \
   ! -name 'screen*' ! -name 'tmux*' ! -name 'dumb' ! -name 'ansi*' -delete
 find "$MNT/usr/share/terminfo" -type d -empty -delete
 
-# the install transaction leaves the sqlite rpmdb full of free pages; a rebuild
-# rewrites it compactly. dnf history/state is build-time noise either way.
+# the install transaction leaves the sqlite rpmdb full of free pages; VACUUM
+# rewrites it compactly. (host `rpm --root --rebuilddb` is blocked by SELinux
+# on the build box — sqlite works on the file directly, no rpm lock needed)
+command -v sqlite3 >/dev/null || dnf5 -y install sqlite
 RPMDB_BEFORE="$(du -sk "$MNT/usr/lib/sysimage/rpm" | cut -f1)"
-rpm --root="$MNT" --rebuilddb
+sqlite3 "$MNT/usr/lib/sysimage/rpm/rpmdb.sqlite" 'VACUUM;'
 rm -rf "$MNT"/var/lib/dnf
 echo "== rpmdb: $((RPMDB_BEFORE/1024)) MiB -> $(($(du -sk "$MNT/usr/lib/sysimage/rpm" | cut -f1)/1024)) MiB =="
 
